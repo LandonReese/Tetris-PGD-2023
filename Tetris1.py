@@ -101,15 +101,20 @@ class TetrisGame:
             self.board.insert(0, [0] * BOARD_WIDTH)
             self.score += 100
 
+    
+
     def run(self):
+        time_since_last_drop = 0
+        drop_speed = 500  # Lower value means faster falling, adjust as desired
+
         while True:
-            self.clock.tick(10)
+            self.clock.tick(60)  # Set the frame rate to 60 FPS
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
-
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.x -= 1
@@ -128,22 +133,27 @@ class TetrisGame:
                         if not self.is_collision_with_rotated(rotated_piece):
                             self.current_piece = rotated_piece
 
-            if not self.is_collision():
-                self.y += 1
-            else:
-                self.join_piece()
-                self.check_lines()
-                self.current_piece = self.new_piece()
-                self.x, self.y = BOARD_WIDTH // 2 - len(self.current_piece[0]) // 2, 0
-                if self.is_collision():
-                    pygame.quit()
-                    return
+                time_since_last_drop += self.clock.get_rawtime()
 
-            self.screen.fill(BLACK)
-            self.draw_board()
-            self.draw_piece()
+                if time_since_last_drop > drop_speed:
+                    time_since_last_drop = 0
 
-            pygame.display.update()
+                    if not self.is_collision():
+                        self.y += 1
+                    else:
+                        self.join_piece()
+                        self.check_lines()
+                        self.current_piece = self.new_piece()
+                        self.x, self.y = BOARD_WIDTH // 2 - len(self.current_piece[0]) // 2, 0
+                        if self.is_collision():
+                            pygame.quit()
+                            return
+
+                self.screen.fill(BLACK)
+                self.draw_board()
+                self.draw_piece()
+
+                pygame.display.update()
 
     def is_collision_with_rotated(self, rotated_piece):
         for y in range(len(rotated_piece)):
